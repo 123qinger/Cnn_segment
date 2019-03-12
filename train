@@ -18,8 +18,8 @@ from torch.utils.data import DataLoader
 import scipy.io as sio
 import torchvision.transforms as tr
 
-from data import BraTSDatasetUnet, BraTSDatasetLSTM
-from losses import DICELossMultiClass
+from data import Unet
+
 from models import UNet
 from tqdm import tqdm
 import numpy as np
@@ -99,7 +99,7 @@ if args.optimizer == 'ADAM':
 
 
 # Defining Loss Function
-criterion = DICELossMultiClass()
+criterion = nn.BCELoss()
 
 
 def train(epoch, loss_lsit):
