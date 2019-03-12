@@ -1,0 +1,78 @@
+import re
+import torch
+from torch.utils.data.dataset import Dataset
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image
+import os
+import scipy.io as sio
+from dataParser import getMaskFileName, getImg
+import torchvision.transforms as tr
+class Unet(Dataset):
+    __file = []
+    __im = []
+    __mask = []
+    im_ht = 0
+    im_wd = 0
+    dataset_size = 0
+
+    def __init__(self, dataset_folder, train=True, keywords=["P1", "1", "flair"], im_size=[512, 512], transform=None):
+
+        self.__file = []
+        self.__im = []
+        self.__mask = []
+        self.im_ht = im_size[0]
+        self.im_wd = im_size[1]
+        self.transform = transform
+
+        folder = dataset_folder
+        # # Open and load text file including the whole training data
+        if train:
+            folder_img = dataset_folder + "case-rgb/"
+            folder_mark= dataset_folder + "case-Mark/"
+
+        else:
+            folder_img = dataset_folder + "new_test/" + "rgb/"
+            folder_mark = dataset_folder + "new_test/" +"mark/"
+
+        for file in os.listdir(folder_img):
+                    # rawImage = getImg(folder_img + file)
+                    self.__im.append(folder_img + file)
+        for file in os.listdir(folder_mark):
+                    # markImage=getImg(folder_mark+file)
+                    self.__mask.append(folder_mark+file)
+                    # 3. read mask image
+                    # mask_file = getMaskFileName(file)
+                    # maskImage = getImg(folder + mask_file)
+                    # self.__mask.append(folder + mask_file)
+        # self.dataset_size = len(self.__file)
+
+        # print("lengths : ", len(self.__im), len(self.__mask))
+        self.dataset_size = len(self.__file)
+
+        if not train:
+            sio.savemat('filelist2.mat', {'data': self.__im})
+
+    def __getitem__(self, index):
+
+        img = getImg(self.__im[index])
+        mask = getImg(self.__mask[index])
+
+        img = img.resize((self.im_ht, self.im_wd))
+        mask = mask.resize((self.im_ht, self.im_wd))
+        # mask.show()
+
+        if self.transform is not None:
+            # TODO: Not sure why not take full image
+            img_tr = self.transform(img)
+            mask_tr = self.transform(mask)
+            # img_tr = self.transform(img[None, :, :])
+            # mask_tr = self.transform(mask[None, :, :])
+
+        return img_tr, mask_tr
+        # return img.float(), mask.float()
+
+    def __len__(self):
+
+        return len(self.__im)
+
