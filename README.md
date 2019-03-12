@@ -1,3 +1,3 @@
 # Cnn_segment
-using CNN to segment Image
+using U_net for  Image segmentation
 
